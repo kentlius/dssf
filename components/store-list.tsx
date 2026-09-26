@@ -103,11 +103,18 @@ export function StoreList({ report }: { report: SkuReport }) {
       </div>
       <div className="mt-2 flex w-full min-w-0 items-center gap-2">
         <input
-          type="text"
+          type="search"
+          enterKeyHint="search"
           value={filter.keyword}
           onChange={(e) => set("keyword", e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
           placeholder="店舗名で検索"
           aria-label="店舗名で検索"
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
           className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-zinc-300 px-3 text-base"
         />
         {dirty && (
@@ -184,7 +191,7 @@ export function StoreList({ report }: { report: SkuReport }) {
                     href={x.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="min-w-0 flex-1 break-words text-[15px] text-sky-600"
+                    className="min-w-0 flex-1 wrap-break-word text-[15px] text-sky-600"
                   >
                     {x.name}
                   </a>

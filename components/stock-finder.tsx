@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import type { SkuReport } from "@/lib/disney";
 import { extractSku } from "@/lib/disney";
 import { ProductDossier } from "./product-dossier";
+import { ShortcutGuide } from "./shortcut-guide";
 import { StoreList } from "./store-list";
 
 interface RecentItem {
@@ -69,7 +70,14 @@ function DeepLink({ onDeepLink }: { onDeepLink: (value: string) => void }) {
   useEffect(() => {
     if (done.current) return;
     done.current = true;
-    const init = searchParams.get("skus") ?? searchParams.get("sku");
+    // Direct links use sku(s); Web Share Target and the iPhone Shortcut
+    // recipe send the official page URL via url/text/title instead.
+    const init =
+      searchParams.get("skus") ??
+      searchParams.get("sku") ??
+      searchParams.get("url") ??
+      searchParams.get("text") ??
+      searchParams.get("title");
     if (init) onDeepLink(init);
   }, [searchParams, onDeepLink]);
   return null;
@@ -81,6 +89,7 @@ export function StockFinder() {
   const [error, setError] = useState<string | null>(null);
   const [report, setReport] = useState<SkuReport | null>(null);
   const [recent, setRecent] = useState<RecentItem[]>(loadRecent);
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const saveRecent = useCallback((item: RecentItem) => {
     setRecent((prev) => {
@@ -139,6 +148,21 @@ export function StockFinder() {
     [check],
   );
 
+  /** Paste from clipboard and check immediately; falls back to focusing the field. */
+  const pasteAndCheck = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text.trim()) {
+        setInput(text);
+        await check(text);
+        return;
+      }
+    } catch {
+      /* clipboard denied/unsupported: fall through to focus */
+    }
+    document.getElementById("sku")?.focus();
+  }, [check]);
+
   const hasResult = report !== null || error !== null || busy;
 
   return (
@@ -158,7 +182,7 @@ export function StockFinder() {
             <h1 className="mt-3 text-xl font-extrabold tracking-tight sm:text-2xl">
               店舗在庫チェッカー
             </h1>
-            <p className="mx-auto mt-2 max-w-md text-sm break-words text-zinc-500">
+            <p className="mx-auto mt-2 max-w-md text-sm wrap-break-word text-zinc-500">
               商品URLか13桁の商品番号を貼るだけ。公式では隠される店舗在庫を表示します。
             </p>
           </div>
@@ -176,27 +200,28 @@ export function StockFinder() {
             }}
             className="flex min-h-12 w-full min-w-0 items-center gap-1 rounded-full border border-zinc-200 bg-white py-1.5 pr-1.5 pl-2 shadow-sm transition-shadow hover:shadow-md focus-within:border-zinc-300 focus-within:shadow-md sm:min-h-14"
           >
-            <button
-              type="submit"
-              disabled={busy}
-              aria-label="在庫を調べる"
-              title="在庫を調べる"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg text-zinc-600 disabled:opacity-50"
+            <span
+              aria-hidden
+              className="flex h-11 w-8 shrink-0 items-center justify-center text-lg text-zinc-400"
             >
-              {busy ? "⏳" : "🔍"}
-            </button>
+              🔍
+            </span>
             <input
               id="sku"
+              name="sku"
               type="text"
               inputMode="numeric"
+              enterKeyHint="search"
               aria-label="商品URLまたは商品番号"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="https://store.disney.co.jp/goods/… / 商品番号"
               autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
               className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-zinc-400 sm:text-lg"
             />
-            {input && !busy && (
+            {input && !busy ? (
               <button
                 type="button"
                 aria-label="入力をクリア"
@@ -206,7 +231,26 @@ export function StockFinder() {
               >
                 ✕
               </button>
+            ) : (
+              !busy && (
+                <button
+                  type="button"
+                  aria-label="クリップボードから貼り付けて検索"
+                  title="貼り付けて検索"
+                  onClick={() => void pasteAndCheck()}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg text-zinc-500"
+                >
+                  📋
+                </button>
+              )
             )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="flex h-11 shrink-0 items-center rounded-full bg-zinc-900 px-4 text-sm font-bold text-white disabled:opacity-50 sm:px-5"
+            >
+              {busy ? "⏳" : "検索"}
+            </button>
           </form>
           {recent.length > 0 && (
             <div className="mt-2 flex w-full min-w-0 snap-x gap-1.5 overflow-x-auto pb-1">
@@ -238,10 +282,19 @@ export function StockFinder() {
             </div>
           )}
         </section>
+          {!hasResult && (
+            <button
+              type="button"
+              onClick={() => setGuideOpen(true)}
+              className="mt-3 flex min-h-11 items-center justify-self-center rounded-full bg-white px-4 text-xs font-bold text-zinc-600 shadow-sm"
+            >
+              📲 公式ページの「共有」から開く方法
+            </button>
+          )}
         </div>
 
         {error && (
-          <div className="error-enter mx-auto mt-3 w-full min-w-0 rounded-2xl border border-red-300 bg-red-50 p-4 break-words text-red-800 lg:max-w-xl">
+          <div className="error-enter mx-auto mt-3 w-full min-w-0 rounded-2xl border border-red-300 bg-red-50 p-4 wrap-break-word text-red-800 lg:max-w-xl">
             エラー: {error}
           </div>
         )}
@@ -250,10 +303,10 @@ export function StockFinder() {
           <div className="mt-3 flex w-full min-w-0 flex-col gap-3">
             <div className="grid w-full min-w-0 items-start gap-3 lg:grid-cols-5">
               <div className="w-full min-w-0 lg:col-span-2">
-                <ProductDossier report={report} />
+                <ProductDossier key={report.sku} report={report} />
               </div>
               <div className="w-full min-w-0 lg:col-span-3">
-                <StoreList report={report} />
+                <StoreList key={report.sku} report={report} />
               </div>
             </div>
           </div>
@@ -271,6 +324,8 @@ export function StockFinder() {
           kentlius
         </a>
       </footer>
+
+      <ShortcutGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
     </>
   );
 }

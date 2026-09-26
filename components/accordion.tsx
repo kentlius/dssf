@@ -26,7 +26,7 @@ export function Accordion({
         >
           ›
         </span>
-        <span className="min-w-0 flex-1 break-words">{summary}</span>
+        <span className="min-w-0 flex-1 wrap-break-word">{summary}</span>
       </button>
       <div className="acc-panel" data-open={open}>
         <div className="acc-inner">{children}</div>
