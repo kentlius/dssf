@@ -147,12 +147,26 @@ export function StockFinder() {
         <DeepLink onDeepLink={handleDeepLink} />
       </Suspense>
 
-      <main className="mx-auto max-w-xl px-4 pb-10 lg:max-w-6xl">
-        <div className="pt-3 text-lg font-bold">🏰 店舗在庫チェッカー</div>
+      <main className="mx-auto w-full min-w-0 max-w-xl px-4 pb-10 lg:max-w-6xl">
+        {hasResult ? (
+          <div className="pt-3 text-lg font-bold">🏰 店舗在庫チェッカー</div>
+        ) : (
+          <div className="px-2 pt-10 text-center sm:pt-14">
+            <div className="text-4xl sm:text-5xl" aria-hidden>
+              🏰
+            </div>
+            <h1 className="mt-3 text-xl font-extrabold tracking-tight sm:text-2xl">
+              店舗在庫チェッカー
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-sm break-words text-zinc-500">
+              商品URLか13桁の商品番号を貼るだけ。公式では隠される店舗在庫を表示します。
+            </p>
+          </div>
+        )}
 
-        <div className={hasResult ? undefined : "grid min-h-[62dvh] content-center"}>
+        <div className={hasResult ? "w-full min-w-0" : "grid w-full min-w-0 content-center pt-4 sm:pt-6"}>
           <section
-            className="mx-auto mt-2 w-full lg:max-w-xl"
+            className="mx-auto mt-2 w-full min-w-0 lg:max-w-xl"
             style={{ viewTransitionName: "search-card" }}
           >
           <form
@@ -160,7 +174,7 @@ export function StockFinder() {
               e.preventDefault();
               void check();
             }}
-            className="flex min-h-14 items-center gap-1 rounded-full border border-zinc-200 bg-white py-1.5 pr-1.5 pl-2 shadow-sm transition-shadow hover:shadow-md focus-within:border-zinc-300 focus-within:shadow-md"
+            className="flex min-h-12 w-full min-w-0 items-center gap-1 rounded-full border border-zinc-200 bg-white py-1.5 pr-1.5 pl-2 shadow-sm transition-shadow hover:shadow-md focus-within:border-zinc-300 focus-within:shadow-md sm:min-h-14"
           >
             <button
               type="submit"
@@ -180,7 +194,7 @@ export function StockFinder() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="https://store.disney.co.jp/goods/… / 商品番号"
               autoComplete="off"
-              className="min-w-0 flex-1 bg-transparent text-lg outline-none placeholder:text-zinc-400"
+              className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-zinc-400 sm:text-lg"
             />
             {input && !busy && (
               <button
@@ -195,7 +209,7 @@ export function StockFinder() {
             )}
           </form>
           {recent.length > 0 && (
-            <div className="mt-2 flex snap-x gap-1.5 overflow-x-auto pb-1">
+            <div className="mt-2 flex w-full min-w-0 snap-x gap-1.5 overflow-x-auto pb-1">
               {recent.map((r) => (
                 <button
                   key={r.skus}
@@ -227,18 +241,18 @@ export function StockFinder() {
         </div>
 
         {error && (
-          <div className="error-enter mx-auto mt-3 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800 lg:max-w-xl">
+          <div className="error-enter mx-auto mt-3 w-full min-w-0 rounded-2xl border border-red-300 bg-red-50 p-4 break-words text-red-800 lg:max-w-xl">
             エラー: {error}
           </div>
         )}
 
         {report && (
-          <div className="mt-3 flex flex-col gap-3">
-            <div className="grid items-start gap-3 lg:grid-cols-5">
-              <div className="lg:col-span-2">
+          <div className="mt-3 flex w-full min-w-0 flex-col gap-3">
+            <div className="grid w-full min-w-0 items-start gap-3 lg:grid-cols-5">
+              <div className="w-full min-w-0 lg:col-span-2">
                 <ProductDossier report={report} />
               </div>
-              <div className="lg:col-span-3">
+              <div className="w-full min-w-0 lg:col-span-3">
                 <StoreList report={report} />
               </div>
             </div>
@@ -246,7 +260,7 @@ export function StockFinder() {
         )}
       </main>
 
-      <footer className="mx-auto max-w-xl px-4 pb-8 text-center text-xs text-zinc-400 lg:max-w-6xl">
+      <footer className="mx-auto w-full max-w-xl px-4 pb-8 text-center text-xs text-zinc-400 lg:max-w-6xl">
         by{" "}
         <a
           href="https://github.com/kentlius"

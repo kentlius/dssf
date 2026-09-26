@@ -66,9 +66,9 @@ export function StoreList({ report }: { report: SkuReport }) {
   }
 
   return (
-    <section className="rounded-2xl bg-white p-3 shadow-sm">
+    <section className="w-full min-w-0 overflow-hidden rounded-2xl bg-white p-3 shadow-sm">
       <div
-        className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1"
+        className="-mx-1 flex w-full min-w-0 snap-x gap-1.5 overflow-x-auto px-1 pb-1"
         role="group"
         aria-label="地域で絞り込む"
       >
@@ -101,14 +101,14 @@ export function StoreList({ report }: { report: SkuReport }) {
           );
         })}
       </div>
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-2 flex w-full min-w-0 items-center gap-2">
         <input
           type="text"
           value={filter.keyword}
           onChange={(e) => set("keyword", e.target.value)}
           placeholder="店舗名で検索"
           aria-label="店舗名で検索"
-          className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-zinc-300 px-3 text-sm"
+          className="min-h-11 min-w-0 flex-1 rounded-xl border-2 border-zinc-300 px-3 text-base"
         />
         {dirty && (
           <button
@@ -122,7 +122,7 @@ export function StoreList({ report }: { report: SkuReport }) {
       </div>
 
       {(scopedTotal > 0 && (
-        <div className="mt-3 flex h-9 overflow-hidden rounded-full" role="group" aria-label="ステータスで絞り込む">
+        <div className="mt-3 flex h-9 w-full min-w-0 overflow-hidden rounded-full" role="group" aria-label="ステータスで絞り込む">
         {(
           [
             { status: "あり", count: scopedCount("あり"), bg: "bg-green-500" },
@@ -178,17 +178,19 @@ export function StoreList({ report }: { report: SkuReport }) {
               {arr.map((x) => (
                 <div
                   key={x.name}
-                  className={`flex min-h-12 items-center justify-between gap-2 border-t border-zinc-100 px-3 py-2 ${ROW_BG[toStatusVariant(x.status)]}`}
+                  className={`flex min-h-12 w-full min-w-0 items-center justify-between gap-2 border-t border-zinc-100 px-3 py-2 ${ROW_BG[toStatusVariant(x.status)]}`}
                 >
                   <a
                     href={x.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[15px] text-sky-600"
+                    className="min-w-0 flex-1 break-words text-[15px] text-sky-600"
                   >
                     {x.name}
                   </a>
-                  <StatusBadge status={x.status} />
+                  <span className="shrink-0">
+                    <StatusBadge status={x.status} />
+                  </span>
                 </div>
               ))}
             </Accordion>

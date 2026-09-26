@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Check physical Disney Store (Japan) inventory — what the official product page hides.",
-  "engines": {
-    "node": "22.x"
-  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

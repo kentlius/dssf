@@ -18,6 +18,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system,
     "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  /* Safety net: a single overflowing child must never make the whole
+     page horizontally scrollable on mobile. */
+  overflow-x: clip;
+}
+
+/* Long unbroken strings (URLs, specs, store names) must wrap instead of
+   forcing their container wider than the viewport. */
+img {
+  max-width: 100%;
 }
 
 /* Press feedback for every pressable: instant-feeling 160ms ease-out.

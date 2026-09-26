@@ -63,9 +63,9 @@ export function ProductDossier({ report }: { report: SkuReport }) {
   ].filter((r): r is [string, string] => r[1] != null && r[1] !== "");
 
   return (
-    <section className="rounded-2xl bg-white p-3 shadow-sm">
-      <div className="flex gap-3">
-        <div className="w-26 shrink-0 sm:w-55">
+    <section className="w-full min-w-0 overflow-hidden rounded-2xl bg-white p-3 shadow-sm">
+      <div className="flex w-full min-w-0 gap-3">
+        <div className="w-24 shrink-0 sm:w-55">
           {o.image && (
             <a href={o.image} target="_blank" rel="noopener noreferrer">
               <Image
@@ -75,7 +75,7 @@ export function ProductDossier({ report }: { report: SkuReport }) {
                 alt={o.name ?? ""}
                 width={220}
                 height={220}
-                className="gallery-main block h-26 w-26 rounded-xl bg-zinc-100 object-cover sm:h-55 sm:w-55"
+                className="gallery-main block h-24 w-24 rounded-xl bg-zinc-100 object-cover sm:h-55 sm:w-55"
               />
             </a>
           )}
@@ -97,11 +97,11 @@ export function ProductDossier({ report }: { report: SkuReport }) {
             </div>
           )}
         </div>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 break-words">
           <OnlineStatus report={report} />
-          <h2 className="mt-0.5 text-base font-bold leading-snug">{o.name}</h2>
+          <h2 className="mt-0.5 text-base font-bold break-words leading-snug">{o.name}</h2>
           <p className="mt-0.5 text-sm">
-            商品番号: <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs select-all">{o.pid}</code>
+            商品番号: <code className="rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-xs break-all select-all">{o.pid}</code>
           </p>
           <p className="mt-0.5 font-bold">{o.price}</p>
           <p className="mt-1.5 flex gap-1.5">
@@ -132,20 +132,20 @@ export function ProductDossier({ report }: { report: SkuReport }) {
       </div>
       {o.description && (
         <Accordion summary="商品説明・注意">
-          <p className="whitespace-pre-line px-3 pb-3 leading-7">{o.description}</p>
-          {o.warning && <p className="px-3 pb-3 text-sm text-zinc-500">⚠️ {o.warning}</p>}
+          <p className="px-3 pb-3 break-words whitespace-pre-line leading-7">{o.description}</p>
+          {o.warning && <p className="px-3 pb-3 text-sm break-words text-zinc-500">⚠️ {o.warning}</p>}
         </Accordion>
       )}
       {specRows.length > 0 && (
         <Accordion summary="詳細スペック">
-          <table className="w-full border-collapse text-[13px]">
+          <table className="w-full table-fixed border-collapse text-[13px]">
             <tbody>
               {specRows.map(([k, v]) => (
                 <tr key={k}>
-                  <th className="w-[36%] border border-zinc-200 bg-zinc-50 p-1.5 text-left align-top font-normal text-zinc-500">
+                  <th className="w-[36%] border border-zinc-200 bg-zinc-50 p-1.5 text-left align-top font-normal break-words text-zinc-500">
                     {k}
                   </th>
-                  <td className="border border-zinc-200 p-1.5 align-top">{v}</td>
+                  <td className="border border-zinc-200 p-1.5 align-top break-words">{v}</td>
                 </tr>
               ))}
             </tbody>
