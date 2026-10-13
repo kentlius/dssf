@@ -15,13 +15,9 @@ import {
  *
  * This handler is a same-origin proxy: Disney's API sends no
  * `Access-Control-Allow-Origin` header, so browsers cannot call it directly.
- * `force-dynamic` keeps every request live (never prerendered/cached at the
- * edge); freshness across identical SKUs is handled by the short TTL
- * read-through cache in `@/lib/disney` instead.
+ * Request data keeps this handler live; freshness across identical SKUs is
+ * handled by the short TTL read-through cache in `@/lib/disney` instead.
  */
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 const hits = new Map<string, number[]>();
 
 function rateLimited(ip: string): boolean {

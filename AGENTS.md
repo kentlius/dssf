@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -19,11 +19,10 @@ Docs: `node_modules/next/dist/docs/` (version-matched, per the block above).
 - Server config is env-driven with zod defaults in `lib/config.ts`
   (see `.env.example`). Never leak upstream URLs/statuses into API errors —
   `DisneyApiError` messages are user-facing.
-- `app/api/check/route.ts` is `force-dynamic` + `runtime: "nodejs"` on
-  purpose: every request must hit the read-through cache logic in lib,
-  never the edge/prerender cache. The in-memory cache + rate limiter are
-  per-instance (fine for single-instance; see `docs` self-hosting guide
-  before scaling out).
+- `app/api/check/route.ts` reads request data so each request executes at
+  request time under Cache Components. The in-memory read-through cache and
+  rate limiter are per-instance (fine for single-instance; see the self-hosting
+  guide before scaling out).
 - UI is client-driven (`components/stock-finder.tsx` boundary) because of
   filters and share-URL state; keep the page shell static. No watch mode,
   no area presets, no hardcoded example products — store stock is a daily
