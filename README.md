@@ -1,34 +1,33 @@
-# 🏰 Disney Store Stock Finder (ディズニーストア店舗在庫チェッカー)
+# 🏰 Disney Store Stock Finder (Disney Store Japan In-Store Stock Checker)
 
-商品URLかJANを貼るだけ。**公式ページではできないこと**をするツールです。
-Paste a product URL or JAN — does what the official page can't.
+Paste a product URL or JAN — it does what **the official page won't**.
 
 Built on **Next.js 16 (App Router) + TypeScript + Tailwind + zod**, per the
 [official docs](https://nextjs.org/docs) (`create-next-app` defaults, Route
 Handlers, self-hosting guide). See `AGENTS.md` for agent-facing notes.
 
-## 公式ページにない機能 (why this exists)
+## Why this exists
 
-サンプル `https://store.disney.co.jp/goods/4550586333055.html` (FAIRY POOH) を深掘りして判明:
+Digging into the sample `https://store.disney.co.jp/goods/4550586333055.html` (FAIRY POOH) revealed:
 
-| 公式ページ | このツール |
+| Official page | This tool |
 |---|---|
-| 店舗在庫ボタン自体が非表示 (`data-is-find-in-store="false"`)。何も分からない | 裏API (`Product-FindInStore`) を直接叩き、**隠された全店舗の在庫を表示** |
-| 売切か不明か区別できない | **全店舗なしを証明** (全店なし → 売切確定)。推測不要 |
-| 商品情報がタブに分散 (説明・サイズ・素材・送料…) | **要点を1画面に**: 画像、サイズ/素材/重さ/対象年齢、発売日、評価★、お気に入り数 |
-| オンライン在庫と店舗在庫が別々 | 両方統合表示 (オンラインATS＋全店舗ステータス) |
-| 店舗リストはモーダルのみ・絞り込み不可 | 地域・店舗名・ステータスで絞り込み、結果コピー＆共有リンク |
-| 日本語のみ | **日英切替** |
-| 店舗在庫は09:00 JST更新の日次データ | UIもその前提でシンプルに: 開くたび最新取得、見張り機能なし |
+| The in-store stock button is hidden entirely (`data-is-find-in-store="false"`). You learn nothing | Calls the internal API (`Product-FindInStore`) directly to **show stock for every hidden store** |
+| Can't tell sold out from unknown | **Proves "no store has it"** (all stores empty → definitely sold out). No guessing |
+| Product details are split across tabs (description, size, material, shipping…) | **The essentials on one screen**: images, size/material/weight/age range, release date, rating ★, favorites count |
+| Online stock and store stock are separate | Both in one view (online ATS + every store's status) |
+| The store list only exists in a modal, with no filtering | Filter by region, store name, or status; copy results and share a link |
+| Japanese only | **Japanese/English toggle** |
+| Store stock is daily data refreshed at 09:00 JST | The UI assumes the same: fetch fresh on open, no watch mode |
 
-実測例 (どの商品にも使えます。URLかJANを貼るだけ):
+Real examples (works for any product — just paste a URL or JAN):
 
-| SKU | オンライン | 店舗 |
+| SKU | Online | Stores |
 |---|---|---|
-| `4550586333697` | あり (ATS 198) | あり4店＋問合せ23 |
-| `4550586333055` | なし (ATS 0) | 45店すべてなし |
+| `4550586333697` | In stock (ATS 198) | 4 stores in stock + 23 by enquiry |
+| `4550586333055` | Out of stock (ATS 0) | None of the 45 stores |
 
-## 開発 (development)
+## Development
 
 ```bash
 pnpm install
@@ -36,14 +35,14 @@ pnpm dev        # http://localhost:3000
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
-## デプロイ (deploy)
+## Deploy
 
-- **Vercel (推奨)**: リポジトリを import するだけ (zero-config)。
-  pnpm は lockfileVersion (9.0) から自動で 9/10 が選ばれる。
-  環境変数は任意: `NEXT_TELEMETRY_DISABLED=1` + `DSSF_*` (`.env.example` 参照)。
-  Node は `engines` (22.x) で固定。
-- **Docker / VPS**: `Dockerfile` (公式パターン, `output: standalone` は
-  Docker ビルド時のみ有効)
+- **Vercel (recommended)**: just import the repository (zero-config).
+  pnpm 9/10 is selected automatically from the lockfileVersion (9.0).
+  Environment variables are optional: `NEXT_TELEMETRY_DISABLED=1` + `DSSF_*` (see `.env.example`).
+  Node is pinned via `engines` (22.x).
+- **Docker / VPS**: `Dockerfile` (official pattern; `output: standalone` is
+  enabled only for Docker builds)
   ```bash
   docker build -t dssf . && docker run -p 3000:3000 dssf
   ```
@@ -51,44 +50,43 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 API + routes:
 
 ```
-GET /                        ツール本体 (モバイルファースト、lgで2カラム結果)
-GET /api/check?sku=4550586333055                  -> 単品レポート
-GET /api/check?skus=<JAN>,<JAN>                   -> 複数レポート ({ results }, 最大4件)
+GET /                        The app itself (mobile-first, two-column results on lg)
+GET /api/check?sku=4550586333055                  -> single-product report
+GET /api/check?skus=<JAN>,<JAN>                   -> multiple reports ({ results }, max 4)
 ```
 
-## 仕組み (how it works)
+## How it works
 
-`store.disney.co.jp` は Salesforce Commerce Cloud (Demandware) 製:
+`store.disney.co.jp` runs on Salesforce Commerce Cloud (Demandware):
 
 ```
 GET .../ja_JP/Product-Variation?pid=<SKU>&quantity=1
  -> product.available / availability.ATS / price / images / rating /
     favoritesCountHtml / releaseDateTime / descriptionFor{Size,Material,…} /
-    enableStoreStock (falseでも店舗データは存在する!) / addToCartButtonState
+    enableStoreStock (store data exists even when false!) / addToCartButtonState
 
 GET .../ja_JP/Product-FindInStore?sku=<SKU>
- -> { templateContent: "#findInStoreListAccordion" のHTML, error }
- -> 地域9区分 × 各行 <a class="store-name">＋<span class="inventory-stock-status">
- -> あり / なし / 店舗問合せ (それ以外は催事などのイベント行として分離)
+ -> { templateContent: HTML for "#findInStoreListAccordion", error }
+ -> 9 regional groups × rows of <a class="store-name"> + <span class="inventory-stock-status">
+ -> in stock / out of stock / ask the store (other rows are split out as event rows, e.g. pop-ups)
 ```
 
-`app/api/check/route.ts` が同一生成元プロキシとして中継
-(Disney は CORS ヘッダーを返さないためブラウザ直叩き不可)。
-`lib/disney.ts` は framework-free (vitest で単体テスト) → `lib/disney.test.ts`。
+`app/api/check/route.ts` acts as a same-origin proxy
+(Disney sends no CORS headers, so the browser can't call the API directly).
+`lib/disney.ts` is framework-free (unit-tested with vitest) → `lib/disney.test.ts`.
 
-## 構成
+## Structure
 
 ```
 app/                  App Router (page, layout, error, api/check/route)
 components/           stock-finder (client boundary) + dossier/store-list/accordion
 lib/                  disney.ts (scrape) / config.ts (env) / readings.ts / format.ts / variants.ts
-Dockerfile            公式 with-docker パターン準拠 (standalone, Docker時のみ)
+Dockerfile            Follows the official with-docker pattern (standalone, Docker only)
 .github/workflows/ci.yml  lint → typecheck → test → build
 ```
 
-- 店舗案内 (公式): https://www.disney.co.jp/store/storeinfo.html
-- 再入荷 (公式): https://store.disney.co.jp/restock/
-- ゲストセンター: 0570-01-3932 (平日 9:00–17:00 / 土 9:00–13:00)
+- Store locator (official): https://www.disney.co.jp/store/storeinfo.html
+- Restock info (official): https://store.disney.co.jp/restock/
+- Guest Center: 0570-01-3932 (weekdays 9:00–17:00 / Sat 9:00–13:00)
 
-非公式ツールです。在庫は変動します。最終確認は必ず店舗へ。
 Unofficial tool. Stock changes constantly — always confirm with the store.
